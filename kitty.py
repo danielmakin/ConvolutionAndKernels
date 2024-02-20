@@ -1,5 +1,7 @@
 from PIL import Image
+from matplotlib import pyplot as plt
 import numpy as np
+from collections import Counter
 
 # TODO :: Figure out how to apply a kernel
 # TODO :: Learn how to normalise an image
@@ -38,15 +40,6 @@ def smooth_weighted(kitty):
 
     return smoothed_kitty
 
-def diff_Image(kitty):
-    '''This Differentites the Image in the X, Y Direcions'''
-    X_Dir = diffXDirection(kitty)
-    Y_Dir = diffYDirection(kitty)
-
-    # Now Combine the Two Images
-    diff_kitty = X_Dir + Y_Dir # Should be the same size
-    return kitty
-
 def threshold_image(kitty, threshold):
     '''This sets every value above the thresold to 255, below to 0'''
     for x in range(len(kitty)):
@@ -62,7 +55,7 @@ def threshold_image(kitty, threshold):
 
 def diffXDirection(kitty):
     '''This Differentiaties the Image in the X Direction (TODO::CHECK)'''
-    kernel = np.array([[-1, 0, 1], [-1, 0, 1], [-1, 0, 1]])
+    kernel = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
     # Now Apply the Filter
     diff_X_kitty = apply_kernel(kitty, kernel)
 
@@ -70,7 +63,7 @@ def diffXDirection(kitty):
 
 def diffYDirection(kitty):
     '''This Differentiates the Image in the Y Direction'''
-    kernel = np.array([[-1, -1, -1], [0, 0, 0], [1, 1, 1]])
+    kernel = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
     # Now Apply the Filter
     diff_Y_kitty = apply_kernel(kitty, kernel)
 
@@ -107,14 +100,66 @@ def apply_kernel(kitty, kernel):
             for i in range(kernel.shape[0]):
                 for j in range(kernel.shape[1]):
                     result = result + (kernel[i][j] * kitty[x-1+i][y-1+j])
-            kitty_applied[x-1][y-1] = result
-
-    print(kitty_applied)
+            kitty_applied[x-1][y-1] = abs(result)
     return kitty_applied
 
+def image_magnitude(kittyx, kittyy):
+    '''Computes the edge magnitude of an image'''
+    kitty_mag = np.zeros_like(kittyx)
 
-# Reads the kitty => Example to check thresholding works
-kitty = read_kitty("kitty.bmp")
+    for x in range(len(kittyx)):
+        for y in range(len(kittyx[0])):
+            kitty_mag[x][y] = ((kittyx[x][y] ** 2) + (kittyy[x][y] ** 2)) ** 0.5
 
-save_kitty(smooth_constant(kitty), 'constant_blur/kitty_blurred.bmp')
-save_kitty(smooth_weighted(kitty), 'weighted_blur/kitty_weighted_blur.bmp')
+    return kitty_mag
+
+def process_image(smoothed_kitty, output_path):
+
+    if output_path != 'original':
+        save_kitty(smoothed_kitty, output_path + '/kitty_blurred.bmp')
+
+    # Now Differentiate the Images, smoothed first
+    smoothed_DX_kitty = diffXDirection(smoothed_kitty)
+    smoothed_DY_kitty = diffYDirection(smoothed_kitty)
+    # Save the Images
+    save_kitty(smoothed_DX_kitty, output_path + '/kitty_DX.bmp')
+    save_kitty(smoothed_DY_kitty, output_path + '/kitty_DY.bmp')
+    # Get the Image Magnitude
+    image_mag = image_magnitude(smoothed_DX_kitty, smoothed_DY_kitty)
+    save_kitty(image_mag, output_path + '/kitty_image_mag.bmp')
+
+    plot_histogram(image_mag, output_path)
+
+    thresholded = threshold_image(image_mag, 210)
+    save_kitty(thresholded, output_path + '/kitty_thresholded.bmp')
+
+def plot_histogram(kitty, output_path):
+    plt.cla()
+    kitty_new = [element for row in kitty for element in row]
+
+    counts = Counter(kitty_new)
+    
+    sorted_by_element = sorted(counts.items(), key=lambda x: x[0])
+
+    nums = [sorted_by_element[1] for sorted_by_element in sorted_by_element]
+
+    plt.plot(nums)
+    plt.xlabel("Pixel Intensity")
+    plt.ylabel("Count")
+    plt.savefig(output_path + '/figs.png')
+    
+def main():
+
+    kitty = read_kitty("kitty.bmp")
+        
+    smoothed_kitty = smooth_constant(kitty)
+    save_kitty(smoothed_kitty,  'constant_blur/kitty_blurred.bmp')
+
+    wsmoothed_kitty = smooth_weighted(kitty)
+    save_kitty(smoothed_kitty,  'weighted_blur/kitty_blurred.bmp')
+        
+    process_image(smoothed_kitty, 'constant_blur')
+    process_image(wsmoothed_kitty, 'weighted_blur')
+    process_image(kitty, 'original')
+
+main()
