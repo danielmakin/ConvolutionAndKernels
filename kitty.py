@@ -117,24 +117,24 @@ def image_magnitude(kittyx, kittyy):
 def process_image(smoothed_kitty, output_path):
 
     if output_path != 'original':
-        save_kitty(smoothed_kitty, output_path + '/kitty_blurred.bmp')
+        save_kitty(smoothed_kitty, output_path + '/kitty_blurred.jpeg')
 
     # Now Differentiate the Images, smoothed first
     smoothed_DX_kitty = diffXDirection(smoothed_kitty)
     smoothed_DY_kitty = diffYDirection(smoothed_kitty)
     # Save the Images
-    save_kitty(smoothed_DX_kitty, output_path + '/kitty_DX.bmp')
-    save_kitty(smoothed_DY_kitty, output_path + '/kitty_DY.bmp')
+    save_kitty(smoothed_DX_kitty, output_path + '/kitty_DX.jpeg')
+    save_kitty(smoothed_DY_kitty, output_path + '/kitty_DY.jpeg')
     # Get the Image Magnitude
     image_mag = image_magnitude(smoothed_DX_kitty, smoothed_DY_kitty)
-    save_kitty(image_mag, output_path + '/kitty_image_mag.bmp')
+    save_kitty(image_mag, output_path + '/kitty_image_mag.jpeg')
 
     plot_histogram(image_mag, output_path)
 
     print(image_mag)
 
-    thresholded = threshold_image(image_mag, 140)
-    save_kitty(thresholded, output_path + '/kitty_thresholded.bmp')
+    thresholded = threshold_image(image_mag, 150)
+    save_kitty(thresholded, output_path + '/kitty_thresholded.jpeg')
 
 def plot_histogram(kitty, output_path):
     plt.cla()
@@ -155,12 +155,13 @@ def plot_histogram(kitty, output_path):
 def main(): 
 
     kitty = read_kitty("kitty.bmp")
+    save_kitty(kitty, "original/non_blurred.jpeg")
         
     smoothed_kitty = smooth_constant(kitty)
-    save_kitty(smoothed_kitty,  'constant_blur/kitty_blurred.bmp')
+    save_kitty(smoothed_kitty,  'constant_blur/kitty_blurred.jpeg')
 
     wsmoothed_kitty = smooth_weighted(kitty)
-    save_kitty(smoothed_kitty,  'weighted_blur/kitty_blurred.bmp')
+    save_kitty(smoothed_kitty,  'weighted_blur/kitty_blurred.jpeg')
         
     process_image(smoothed_kitty, 'constant_blur')
     process_image(wsmoothed_kitty, 'weighted_blur')
