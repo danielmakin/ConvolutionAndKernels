@@ -131,9 +131,7 @@ def process_image(smoothed_kitty, output_path):
 
     plot_histogram(image_mag, output_path)
 
-    print(image_mag)
-
-    thresholded = threshold_image(image_mag, 150)
+    thresholded = threshold_image(image_mag, 220)
     save_kitty(thresholded, output_path + '/kitty_thresholded.jpeg')
 
 def plot_histogram(kitty, output_path):
@@ -153,7 +151,6 @@ def plot_histogram(kitty, output_path):
     plt.savefig(output_path + '/figs.png')
     
 def main(): 
-
     kitty = read_kitty("kitty.bmp")
     save_kitty(kitty, "original/non_blurred.jpeg")
         
