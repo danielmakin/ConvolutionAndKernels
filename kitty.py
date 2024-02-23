@@ -3,8 +3,9 @@ from matplotlib import pyplot as plt
 import numpy as np
 from collections import Counter
 
-# TODO :: Figure out how to apply a kernel
-# TODO :: Learn how to normalise an image
+# TODO:: Am I Applying the right Weighted mean kernel?
+# TODO:: Applyting a Padding of Zeros is Causing the Box around the image
+    # This causes an edge as the pixel next to it is not 0.
 
 def read_kitty(path):
     # Read the Image File
@@ -34,7 +35,7 @@ def smooth_weighted(kitty):
             [1, 2, 1]
             [2, 4, 2]
             [1, 2, 1]'''
-    kernel = np.array([[1/16, 2/16, 1/16], [2/16, 4/16, 2/16], [1/16, 2/16, 1/16]]) # This may need to be normalised after
+    kernel = np.array([[1/16, 2/16, 1/16], [2/16, 4/16, 2/16], [1/16, 2/16, 1/16]])
     # Smooth the kitty for with this kernel
     smoothed_kitty = apply_kernel(kitty, kernel)
 
@@ -53,21 +54,21 @@ def threshold_image(kitty, threshold):
 
     return kitty
 
-def diffXDirection(kitty):
-    '''This Differentiaties the Image in the X Direction (TODO::CHECK)'''
-    kernel = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
-    # Now Apply the Filter
-    diff_X_kitty = apply_kernel(kitty, kernel)
-
-    return diff_X_kitty
-
 def diffYDirection(kitty):
-    '''This Differentiates the Image in the Y Direction'''
-    kernel = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
+    '''This Differentiaties the Image in the X Direction'''
+    kernel = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
     # Now Apply the Filter
     diff_Y_kitty = apply_kernel(kitty, kernel)
 
     return diff_Y_kitty
+
+def diffXDirection(kitty):
+    '''This Differentiates the Image in the Y Direction'''
+    kernel = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]])
+    # Now Apply the Filter
+    diff_X_kitty = apply_kernel(kitty, kernel)
+
+    return diff_X_kitty
 
 def pad_edges(kitty, num):
     '''Gives the Kitty Image and the Number to Pad it with'''
@@ -130,7 +131,9 @@ def process_image(smoothed_kitty, output_path):
 
     plot_histogram(image_mag, output_path)
 
-    thresholded = threshold_image(image_mag, 210)
+    print(image_mag)
+
+    thresholded = threshold_image(image_mag, 140)
     save_kitty(thresholded, output_path + '/kitty_thresholded.bmp')
 
 def plot_histogram(kitty, output_path):
@@ -144,11 +147,12 @@ def plot_histogram(kitty, output_path):
     nums = [sorted_by_element[1] for sorted_by_element in sorted_by_element]
 
     plt.plot(nums)
+    plt.title(output_path)
     plt.xlabel("Pixel Intensity")
     plt.ylabel("Count")
     plt.savefig(output_path + '/figs.png')
     
-def main():
+def main(): 
 
     kitty = read_kitty("kitty.bmp")
         
